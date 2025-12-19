@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/pages/others/change_password_page.dart';
-import 'package:flutter_pro/app/mobile/pages/others/update_username_page.dart';
-import 'package:flutter_pro/core/constants/app_dimensions.dart';
-import 'package:flutter_pro/core/constants/words.dart';
-import 'package:flutter_pro/core/theme/app_text_styles.dart';
-
+import 'package:stress_sense/app/mobile/pages/others/change_password_page.dart';
+import 'package:stress_sense/app/mobile/pages/others/update_username_page.dart';
+import 'package:stress_sense/core/constants/app_dimensions.dart';
+import 'package:stress_sense/core/constants/words.dart';
+import 'package:stress_sense/core/theme/app_text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../../../core/notifiers/notifiers.dart';
 import '../../../../scaffolds/app_padding_scaffold.dart';
 import '../../../../widgets/list_tile_widget.dart';
 import '../../../../widgets/neon_padding_widget.dart';
 import '../../../../widgets/unaffected_child_widget.dart';
 import '../../../others/delete_account_page.dart';
+import '../../../others/reset_password_page.dart';
 
 class ProfileWidget extends StatelessWidget {
   const ProfileWidget({super.key});
@@ -21,37 +22,47 @@ class ProfileWidget extends StatelessWidget {
       Navigator.pop(context);
     }
 
-    void logout() {
-      AppData.isAuthConnected.value = false;
-      AppData.navBarCurrentIndexNotifier.value = 0;
-      AppData.onboardingCurrentIndexNotifier.value = 0;
-      popPage();
+    Future<void> logout() async {
+      try {
+        await FirebaseAuth.instance.signOut();
+
+        // Reset local app state
+        AppData.isAuthConnected.value = false;
+        AppData.navBarCurrentIndexNotifier.value = 0;
+
+        // Return to AuthLayout (root)
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } catch (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to logout')),
+        );
+      }
     }
 
     return AppPaddingScaffold(
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 10.0),
-        NeonPaddingWidget(
-          isCentered: true,
-          child: Column(
-            children: [
-              const Text(
-                '😊',
-                style: AppTextStyles.icons,
-              ),
-              Text(
-                Words.flutterPro,
-                style: AppTextStyles.l,
-              ),
-              Text(
-                Words.flutterProEmail,
-                style: AppTextStyles.m.copyWith(color: Colors.white54),
-              ),
-              const SizedBox(height: AppDimensions.kPadding5)
-            ],
-          ),
-        ),
+        // NeonPaddingWidget(
+        //   isCentered: true,
+        //   child: Column(
+        //     children: [
+        //       const Text(
+        //         '😊',
+        //         style: AppTextStyles.icons,
+        //       ),
+        //       Text(
+        //         "StressSense",
+        //         style: AppTextStyles.l,
+        //       ),
+        //       Text(
+        //         Words.flutterProEmail,
+        //         style: AppTextStyles.m.copyWith(color: Colors.white54),
+        //       ),
+        //       const SizedBox(height: AppDimensions.kPadding5)
+        //     ],
+        //   ),
+        // ),
         const SizedBox(height: 20.0),
         const ListTileWidget(
           title: Text(
@@ -94,7 +105,7 @@ class ProfileWidget extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) {
-                    return ChangePasswordPage();
+                    return ResetPasswordPage();
                   },
                 ),
               );

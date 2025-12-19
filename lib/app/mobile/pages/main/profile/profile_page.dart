@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/core/constants/words.dart';
+import 'package:stress_sense/core/constants/words.dart';
 
 import '../../../scaffolds/app_bar_scaffold.dart';
 import 'widgets/profile_widget.dart';

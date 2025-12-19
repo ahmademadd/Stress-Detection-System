@@ -1,10 +1,8 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
-import 'package:flutter_pro/core/constants/words.dart';
-import 'package:flutter_pro/core/theme/app_text_styles.dart';
-
+import 'package:stress_sense/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
+import 'package:stress_sense/core/constants/words.dart';
+import 'package:stress_sense/core/theme/app_text_styles.dart';
 import '../../widgets/button_widget.dart';
 
 class ChangePasswordPage extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_pro/core/constants/storage/user_habit_keys.dart';
+import 'package:stress_sense/core/constants/storage/user_habit_keys.dart';
 
 String? mergeLatestUpdates(
     {required String? remoteJsonString, required String? localJsonString}) {

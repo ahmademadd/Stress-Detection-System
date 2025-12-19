@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
-import 'package:flutter_pro/app/mobile/widgets/button_widget.dart';
-import 'package:flutter_pro/core/theme/app_text_styles.dart';
+import 'package:stress_sense/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
+import 'package:stress_sense/app/mobile/widgets/button_widget.dart';
+import 'package:stress_sense/core/theme/app_text_styles.dart';
 
 import '../../../../core/constants/words.dart';
 import '../../../../core/notifiers/notifiers.dart';

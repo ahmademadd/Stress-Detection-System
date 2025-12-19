@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
-import 'package:flutter_pro/core/constants/words.dart';
-import 'package:flutter_pro/core/theme/app_text_styles.dart';
-
-import '../../../widgets/button_widget.dart';
+import 'package:stress_sense/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
+import 'package:stress_sense/core/constants/words.dart';
+import 'package:stress_sense/core/theme/app_text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../widgets/button_widget.dart';
 
 class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({
+  ResetPasswordPage({
     super.key,
-    required this.email,
+    this.email,
   });
 
-  final String email;
+  late String? email;
 
   @override
   State<ResetPasswordPage> createState() => _ResetPasswordPageState();
@@ -20,12 +20,11 @@ class ResetPasswordPage extends StatefulWidget {
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   TextEditingController controllerEmail = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    controllerEmail.text = widget.email;
+    controllerEmail.text = widget.email ?? "";
   }
 
   @override
@@ -44,6 +43,42 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       ),
       showCloseIcon: true,
     ));
+  }
+  Future<void> resetPassword() async {
+    try {
+      final email = controllerEmail.text.trim();
+
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: email,
+      );
+
+      showSnackBar();
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) Navigator.pop(context);
+      });
+
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No account found for this email';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        default:
+          errorMessage = e.message ?? 'Failed to reset password';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong')),
+      );
+    }
   }
 
   @override
@@ -87,22 +122,13 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                           labelText: Words.email,
                         ),
                         validator: (String? value) {
-                          if (value == null) {
-                            return Words.enterSomething;
-                          }
-                          if (value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return Words.enterSomething;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        errorMessage,
-                        style: AppTextStyles.m.copyWith(
-                          color: Colors.redAccent,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -118,7 +144,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           label: Words.resetPassword,
           callback: () async {
             if (formKey.currentState!.validate()) {
-              showSnackBar();
+              await resetPassword();
             }
           },
         ),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "592990957612",
+    "project_id": "sttresssense",
+    "storage_bucket": "sttresssense.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592990957612:android:f1db7bd290e9327e8a6189",
+        "android_client_info": {
+          "package_name": "com.fluttermapp.flutter_pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0kjcrYKFMFnksMq1vtHwM9ikO5F9wFU8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

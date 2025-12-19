@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/core/notifiers/notifiers.dart';
+import 'package:stress_sense/core/notifiers/notifiers.dart';
 
 import '../../../core/config/init.dart';
 import '../pages/others/app_loading_page.dart';

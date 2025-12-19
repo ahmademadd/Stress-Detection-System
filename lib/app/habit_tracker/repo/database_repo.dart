@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_pro/app/habit_tracker/repo/user_habit_entity.dart';
-import 'package:flutter_pro/core/constants/storage/storage_keys.dart';
-import 'package:flutter_pro/core/errors/error_message.dart';
+import 'package:stress_sense/app/habit_tracker/repo/user_habit_entity.dart';
+import 'package:stress_sense/core/constants/storage/storage_keys.dart';
+import 'package:stress_sense/core/errors/error_message.dart';
 
 import '../../../core/errors/failure.dart';
 import '../data/models/user_habit_model.dart';

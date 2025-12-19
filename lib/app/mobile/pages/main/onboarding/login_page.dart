@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
-import 'package:flutter_pro/core/notifiers/notifiers.dart';
-import 'package:flutter_pro/core/theme/app_text_styles.dart';
-
+import 'package:stress_sense/app/mobile/pages/main/onboarding/welcome_page.dart';
+import 'package:stress_sense/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
+import 'package:stress_sense/core/notifiers/notifiers.dart';
+import 'package:stress_sense/core/theme/app_text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../../core/constants/words.dart';
+import '../../../../../core/routes/page_route_return.dart';
 import '../../../widgets/button_widget.dart';
-import 'reset_password_page.dart';
+import '../../others/reset_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -27,10 +29,45 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void signIn() {
-    AppData.isAuthConnected.value = true;
-    popPage();
+  Future<void> signIn() async {
+    try {
+      final email = controllerEmail.text.trim();
+      final password = controllerPassword.text.trim();
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      AppData.isAuthConnected.value = true;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'user-not-found':
+          errorMessage = 'No user found for this email';
+          break;
+        case 'wrong-password':
+          errorMessage = 'Incorrect password';
+          break;
+        case 'invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        default:
+          errorMessage = e.message ?? 'Login failed';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong')),
+      );
+    }
   }
+
 
   void popPage() {
     Navigator.pop(context);
@@ -41,9 +78,7 @@ class _LoginPageState extends State<LoginPage> {
     return AppBottomBarButtons(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => popPage(),
           icon: const Icon(
             Icons.arrow_back_ios,
             color: Colors.white,
@@ -77,10 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                           labelText: Words.email,
                         ),
                         validator: (String? value) {
-                          if (value == null) {
-                            return Words.enterSomething;
-                          }
-                          if (value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return Words.enterSomething;
                           }
                           return null;
@@ -89,14 +121,12 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: controllerPassword,
+                        obscureText: true,
                         decoration: const InputDecoration(
                           labelText: Words.password,
                         ),
                         validator: (String? value) {
-                          if (value == null) {
-                            return Words.enterSomething;
-                          }
-                          if (value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty) {
                             return Words.enterSomething;
                           }
                           return null;

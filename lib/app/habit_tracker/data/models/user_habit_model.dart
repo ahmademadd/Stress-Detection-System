@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter_pro/app/habit_tracker/repo/user_habit_entity.dart';
-import 'package:flutter_pro/core/constants/words.dart';
+import 'package:stress_sense/app/habit_tracker/repo/user_habit_entity.dart';
+import 'package:stress_sense/core/constants/words.dart';
 import '../../../../core/constants/storage/user_habit_keys.dart';
 
 class UserHabitModel {

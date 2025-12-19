@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/habit_tracker/repo/user_habit_entity.dart';
+import 'package:stress_sense/app/habit_tracker/repo/user_habit_entity.dart';
 import '../../../../../core/errors/failure.dart';
 import '../../data/services/shared_pref_service.dart';
 import '../../repo/database_repo.dart';
-import 'package:flutter_pro/core/constants/app_formatters.dart';
-import 'package:flutter_pro/core/constants/storage/user_habit_keys.dart';
+import 'package:stress_sense/core/constants/app_formatters.dart';
+import 'package:stress_sense/core/constants/storage/user_habit_keys.dart';
 import 'package:intl/intl.dart';
 
 class UserHabitProvider extends ChangeNotifier {

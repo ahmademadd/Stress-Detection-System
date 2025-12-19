@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/habit_tracker/repo/user_habit_entity.dart';
-import 'package:flutter_pro/app/habit_tracker/view/widgets/edit_habit_name_widget.dart';
-import 'package:flutter_pro/core/constants/app_dimensions.dart';
+import 'package:stress_sense/app/habit_tracker/repo/user_habit_entity.dart';
+import 'package:stress_sense/app/habit_tracker/view/widgets/edit_habit_name_widget.dart';
+import 'package:stress_sense/core/constants/app_dimensions.dart';
 import 'package:provider/provider.dart';
 import 'custom_date_picker.dart';
 import '../providers/user_habit_provider.dart';

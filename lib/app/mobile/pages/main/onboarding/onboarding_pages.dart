@@ -60,7 +60,7 @@ class _OnboardingPagesState extends State<OnboardingPages>
             color: Colors.white,
           ),
         ),
-        title: const Text(Words.flutterPro),
+        title: const Text("StressSense"),
         bottom: PreferredSize(
           preferredSize: const Size(double.infinity, double.minPositive),
           child: BottomStepperWidget(

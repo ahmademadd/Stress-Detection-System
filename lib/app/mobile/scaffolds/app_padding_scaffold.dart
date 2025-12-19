@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/core/constants/app_dimensions.dart';
+import 'package:stress_sense/core/constants/app_dimensions.dart';
 
 import '../widgets/unaffected_child_widget.dart';
 

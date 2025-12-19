@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pro/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
-import 'package:flutter_pro/core/constants/app_assets.dart';
+import 'package:stress_sense/app/mobile/pages/main/onboarding/register_page.dart';
+import 'package:stress_sense/app/mobile/scaffolds/app_bottom_bar_buttons.dart';
+import 'package:stress_sense/core/constants/app_assets.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/constants/words.dart';
@@ -53,7 +54,7 @@ class WelcomePage extends StatelessWidget {
                                 style: AppTextStyles.xxl,
                               ),
                               TextSpan(
-                                text: Words.flutterPro,
+                                text: "StressSense",
                                 style: AppTextStyles.xxlBlack,
                               ),
                             ],
@@ -62,7 +63,7 @@ class WelcomePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        Words.theUltimateFlutterProCourse,
+                        "Because every child deserves to feel safe",
                         style: AppTextStyles.m.copyWith(color: Colors.white54),
                       ),
                     ],
@@ -81,11 +82,10 @@ class WelcomePage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) {
-                  return const OnboardingPages();
-                },
+                builder: (context) => const RegisterPage(),
               ),
             );
+
           },
         ),
         const SizedBox(height: 10.0),
@@ -95,9 +95,7 @@ class WelcomePage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) {
-                  return const LoginPage();
-                },
+                builder: (context) => const LoginPage(),
               ),
             );
           },
