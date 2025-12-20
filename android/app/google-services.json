@@ -12,7 +12,20 @@
           "package_name": "com.fluttermapp.flutter_pro"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "592990957612-qj4dhevlil4ikn7ehvr08er42r267236.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fluttermapp.flutter_pro",
+            "certificate_hash": "145f62a98dff198e246753816683b247b09515bb"
+          }
+        },
+        {
+          "client_id": "592990957612-b736k2pu7da939s3q7u9i5f7h75rcnf4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA0kjcrYKFMFnksMq1vtHwM9ikO5F9wFU8"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592990957612-b736k2pu7da939s3q7u9i5f7h75rcnf4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "592990957612-2lt0vmug54vrqsd7o90mo1o5ts1jpj9h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fluttermapp.flutterPro"
+              }
+            }
+          ]
         }
       }
     }
