@@ -7,7 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../../core/constants/words.dart';
 import '../../../../../core/routes/page_route_return.dart';
 import '../../../widgets/button_widget.dart';
+import '../../others/app_loading_page.dart';
 import '../../others/reset_password_page.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -30,6 +33,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> signIn() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AppLoadingPage()),
+    );
     try {
       final email = controllerEmail.text.trim();
       final password = controllerPassword.text.trim();
@@ -42,6 +48,8 @@ class _LoginPageState extends State<LoginPage> {
       AppData.isAuthConnected.value = true;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
+      popPage();
+
       String errorMessage;
 
       switch (e.code) {
@@ -62,6 +70,68 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text(errorMessage)),
       );
     } catch (_) {
+      popPage();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong')),
+      );
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AppLoadingPage()),
+    );
+    try {
+      final GoogleSignInAccount? googleUser =
+      await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        popPage();
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      AppData.isAuthConnected.value = true;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+
+    } on FirebaseAuthException catch (e) {
+      popPage();
+
+      String errorMessage;
+
+      switch (e.code) {
+        case 'account-exists-with-different-credential':
+          errorMessage =
+          'An account already exists with a different sign-in method';
+          break;
+        case 'invalid-credential':
+          errorMessage = 'Invalid authentication credentials';
+          break;
+        case 'user-disabled':
+          errorMessage = 'This account has been disabled';
+          break;
+        default:
+          errorMessage = e.message ?? 'Google sign-in failed';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+
+    } catch (_) {
+      popPage();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Something went wrong')),
       );
@@ -90,7 +160,6 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(30.0),
           child: Column(
             children: [
-              const SizedBox(height: 60.0),
               const Text(
                 Words.signIn,
                 style: AppTextStyles.xxlBold,
@@ -149,6 +218,19 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           child: const Text(Words.resetPassword),
                         ),
+                      ),
+                      Text(
+                        "Or",
+                        style: AppTextStyles.m.copyWith(color: Colors.white54),
+                      ),
+                      SizedBox(height: 20),
+                      SignInButton(
+                        width: 250,
+                        shape: Border.all(strokeAlign: 3, width:3 , color: Colors.white),
+                        padding: EdgeInsets.all(3),
+                        Buttons.Google,
+                        text: "Sign in with Google",
+                        onPressed: signInWithGoogle,
                       ),
                     ],
                   ),

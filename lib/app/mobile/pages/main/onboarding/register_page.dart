@@ -7,6 +7,7 @@ import '../../../../../core/notifiers/notifiers.dart';
 import '../../../../../core/routes/page_route_return.dart';
 import '../../../scaffolds/app_bottom_bar_buttons.dart';
 import '../../../widgets/button_widget.dart';
+import '../../others/app_loading_page.dart';
 import 'widgets/bottom_stepper_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -32,6 +33,9 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> register() async {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AppLoadingPage()),
+    );
     try {
       final email = controllerEmail.text.trim();
       final password = controllerPassword.text.trim();
@@ -46,6 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
       AppData.isAuthConnected.value = true;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
+      popPage();
 
       String errorMessage;
       switch (e.code) {
@@ -60,6 +65,8 @@ class _RegisterPageState extends State<RegisterPage> {
         SnackBar(content: Text(errorMessage)),
       );
     } catch (_) {
+      popPage();
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Something went wrong')),
       );

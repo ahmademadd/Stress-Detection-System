@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:stress_sense/app/mobile/pages/others/change_password_page.dart';
 import 'package:stress_sense/app/mobile/pages/others/update_username_page.dart';
 import 'package:stress_sense/core/constants/app_dimensions.dart';
@@ -24,8 +25,8 @@ class ProfileWidget extends StatelessWidget {
 
     Future<void> logout() async {
       try {
+        await GoogleSignIn().signOut();
         await FirebaseAuth.instance.signOut();
-
         // Reset local app state
         AppData.isAuthConnected.value = false;
         AppData.navBarCurrentIndexNotifier.value = 0;
