@@ -25,7 +25,15 @@ class ProfileWidget extends StatelessWidget {
 
     Future<void> logout() async {
       try {
-        await GoogleSignIn().signOut();
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user != null) {
+          for (final provider in user.providerData) {
+            if (provider.providerId.contains('google.com')) {
+              await GoogleSignIn().signOut();
+            }
+          }
+        }
         await FirebaseAuth.instance.signOut();
         // Reset local app state
         AppData.isAuthConnected.value = false;
@@ -144,7 +152,7 @@ class ProfileWidget extends StatelessWidget {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text(Words.flutterPro),
+                    title: const Text('StressSense'),
                     content: const Text(
                       Words.aboutThisApp,
                       style: AppTextStyles.m,

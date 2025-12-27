@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: Words.flutterPro,
+        title: 'StressSense',
         theme: AppTheme.dark,
         home: const InitAppLayout(),
       ),
