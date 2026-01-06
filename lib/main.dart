@@ -25,18 +25,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => UserHabitProvider(),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'StressSense',
-        theme: AppTheme.dark,
-        home: const InitAppLayout(),
-      ),
+    return  MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'StressSense',
+      theme: AppTheme.dark,
+      home: const InitAppLayout(),
     );
   }
 }

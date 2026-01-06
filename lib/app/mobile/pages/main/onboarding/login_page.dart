@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                 '🔑',
                 style: AppTextStyles.icons,
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 38),
               Form(
                 key: formKey,
                 child: Center(

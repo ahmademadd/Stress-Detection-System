@@ -31,15 +31,6 @@ class _BluetoothConnectWidgetState extends State<BluetoothConnectWidget> {
     }
   }
 
-  Color get buttonColor {
-    if (AppData.blueToothConnectionState.value == DeviceConnectionState.connected) return Colors.green;
-    if (AppData.blueToothConnectionState.value == DeviceConnectionState.scanning ||
-        AppData.blueToothConnectionState.value == DeviceConnectionState.connecting) {
-      return Colors.orange;
-    }
-    return Colors.blue;
-  }
-
   Future<void> _connectFlow() async {
     final granted = await PermissionService.requestBlePermissions();
     if (!granted) {

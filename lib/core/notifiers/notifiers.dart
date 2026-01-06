@@ -15,9 +15,11 @@ class AppData {
   //App
   static final ValueNotifier<bool> isAuthConnected = ValueNotifier(false);
   static final ValueNotifier<bool> isPredictingStress = ValueNotifier(false);
-  static final ValueNotifier<bool> iStressed = ValueNotifier(false);
+  static final ValueNotifier<bool> isStressed = ValueNotifier(false);
   static final ValueNotifier<bool> isConnectedNotifier = ValueNotifier(false);
   static final ValueNotifier<bool> isAppOutdatedNotifier = ValueNotifier(false);
   static final ValueNotifier<int> navBarCurrentIndexNotifier = ValueNotifier(0);
   static final ValueNotifier<DeviceConnectionState> blueToothConnectionState = ValueNotifier(DeviceConnectionState.disconnected);
+  static final ValueNotifier<int?> bpm = ValueNotifier(null);
+
 }

@@ -17,6 +17,11 @@ class BottomNavigationBarWidget extends StatelessWidget {
     return NavigationBar(
       destinations: const [
         NavigationDestination(
+          icon: Icon(Icons.monitor_heart_outlined),
+          selectedIcon: Icon(Icons.monitor_heart),
+          label: 'Monitor',
+        ),
+        NavigationDestination(
           icon: Icon(Icons.dashboard_outlined),
           selectedIcon: Icon(Icons.dashboard),
           label: Words.explore,

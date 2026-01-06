@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-Future<void> insertTestStressData({int days = 28}) async {
+Future<void> insertTestStressData({int days = 40}) async {
   final today = DateTime.now();
   final userId = FirebaseAuth.instance.currentUser!.uid;
   final random = Random();

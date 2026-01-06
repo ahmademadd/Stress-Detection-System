@@ -1,16 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:stress_sense/app/stress_tracker/repo/stress_event_repository.dart';
 
 import '../model/stress_event.dart';
 
 class FirestoreStressEventRepository implements StressEventRepository {
-  final FirebaseFirestore firestore;
-  final String userId;
-
-  FirestoreStressEventRepository({
-    required this.firestore,
-    required this.userId,
-  });
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Future<void> saveStressEvent(StressEvent event) async {

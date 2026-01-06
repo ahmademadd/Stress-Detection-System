@@ -11,16 +11,8 @@ import '../repo/firestore_stress_summary_repository.dart';
 import '../repo/stress_event_repository.dart';
 
 class StressApiService {
-  final StressEventRepository stressEventRepository =
-  FirestoreStressEventRepository(
-    firestore: FirebaseFirestore.instance,
-    userId: FirebaseAuth.instance.currentUser!.uid,
-  );
-  final StressSummaryRepository stressSummaryRepository =
-  FirestoreStressSummaryRepository(
-    firestore: FirebaseFirestore.instance,
-    userId: FirebaseAuth.instance.currentUser!.uid,
-  );
+  final StressEventRepository stressEventRepository = FirestoreStressEventRepository();
+  final StressSummaryRepository stressSummaryRepository = FirestoreStressSummaryRepository();
 
   Future<List<double>> preprocessData({
     required List<double> accX,
@@ -87,7 +79,7 @@ class StressApiService {
     );
     final prediction = await predictStress(features);
     if (prediction == 1) {
-      AppData.iStressed.value = true;
+      AppData.isStressed.value = true;
       final event = StressEvent(
         timestamp: DateTime.now(),
         prediction: true,
@@ -96,7 +88,7 @@ class StressApiService {
       await stressSummaryRepository.incrementToday();
 
     } else {
-      AppData.iStressed.value = false;
+      AppData.isStressed.value = false;
     }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:stress_sense/app/mobile/pages/main/explore/explore_page.dart';
+import 'package:stress_sense/app/mobile/pages/main/monitor/monitor_page.dart';
 import '../../../core/notifiers/notifiers.dart';
-import '../pages/main/home/home_page.dart';
 import '../pages/main/profile/profile_page.dart';
 import '../widgets/bottom_navigation_bar_widget.dart';
 
@@ -10,7 +11,8 @@ class AppNavigationLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> pages = const [
-      HomePage(),
+      MonitorPage(),
+      ExplorePage(),
       ProfilePage(),
     ];
     return ValueListenableBuilder(

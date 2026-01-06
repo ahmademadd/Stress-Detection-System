@@ -1,15 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'daily_stress_summary_repository.dart';
 
 class FirestoreStressSummaryRepository implements StressSummaryRepository {
-  final FirebaseFirestore firestore;
-  final String userId;
-
-  FirestoreStressSummaryRepository({
-    required this.firestore,
-    required this.userId,
-  });
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   Stream<Map<String, int>> watchDailyStressCounts({

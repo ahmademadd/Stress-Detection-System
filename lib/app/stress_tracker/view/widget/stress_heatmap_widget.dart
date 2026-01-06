@@ -1,11 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cristalyse/cristalyse.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:stress_sense/app/stress_tracker/view/widget/timespan_selector_widget.dart';
 
+import '../../../../core/timespan/timespan.dart';
 import '../../repo/daily_stress_summary_repository.dart';
 import '../../repo/firestore_stress_summary_repository.dart';
+import '../chart_data.dart';
 
 class StressHeatmap extends StatefulWidget {
   const StressHeatmap({super.key});
@@ -15,14 +16,12 @@ class StressHeatmap extends StatefulWidget {
 }
 
 class _StressHeatmapState extends State<StressHeatmap> {
-  final StressSummaryRepository stressSummaryRepository =
-      FirestoreStressSummaryRepository(
-    firestore: FirebaseFirestore.instance,
-    userId: FirebaseAuth.instance.currentUser!.uid,
-  );
+  final StressSummaryRepository stressSummaryRepository = FirestoreStressSummaryRepository();
   final PageController _pageController = PageController();
-  late final List<Widget> _pages;
   int _currentPage = 0;
+  TimeSpan _selectedTimeSpan = TimeSpan.week;
+  DateTime get endDate => DateTime.now();
+  late DateTime startDate;
 
   @override
   void dispose() {
@@ -33,15 +32,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
   @override
   void initState() {
     super.initState();
-
-    final DateTime endDate = DateTime.now();
-    final DateTime startDate = DateTime(endDate.year, endDate.month, 1);
-
-    _pages = [
-      _buildBarChartWidget(endDate.subtract(Duration(days: 6)), endDate),
-      _buildHeatmapWidget(startDate, endDate),
-      //_buildThirdWidget(),
-    ];
+    startDate = calculateRange(_selectedTimeSpan);
   }
 
   Widget _buildBarChartWidget(DateTime startDate, DateTime endDate) {
@@ -110,6 +101,98 @@ class _StressHeatmapState extends State<StressHeatmap> {
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return labels[date.weekday - 1];
   }
+
+  Widget _buildLineChartWidget(DateTime startDate, DateTime endDate) {
+    return StreamBuilder<Map<String, int>>(
+      stream: stressSummaryRepository.watchDailyStressCounts(
+        startDate: startDate,
+        endDate: endDate,
+      ),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox(
+            height: 180,
+            child: Center(child: Text('No data')),
+          );
+        }
+
+        final chartData = mapToChartData(snapshot.data!);
+
+        return SizedBox(
+          height: 180,
+          child: LineChart(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+            LineChartData(
+              minY: 0,
+              maxY: 30,
+              gridData: FlGridData(show: true),
+              borderData: FlBorderData(show: true),
+
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+
+                /// 👇 DATES HERE
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: _dateInterval(chartData.dates.length),
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index < 0 || index >= chartData.dates.length) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final date = chartData.dates[index];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          '${date.month}/${date.day}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              lineBarsData: [
+                LineChartBarData(
+                  spots: chartData.spots,
+                  isCurved: true,
+                  curveSmoothness: 0.35,
+                  barWidth: 2,
+                  color: Colors.white,
+                  dotData: FlDotData(show: true),
+                  belowBarData: BarAreaData(show: false),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  double _dateInterval(int length) {
+    if (length <= 7) return 1;     // 1d / 7d
+    if (length <= 31) return 5;    // 4w
+    return 30;                     // 1y
+  }
+
+
 
   Widget _buildHeatmapWidget(DateTime startDate, DateTime endDate) {
     return StreamBuilder<Map<String, int>>(
@@ -180,22 +263,64 @@ class _StressHeatmapState extends State<StressHeatmap> {
     );
   }
 
+
+
+  DateTime calculateRange(TimeSpan span) {
+    final now = DateTime.now();
+
+    switch (span) {
+      case TimeSpan.day:
+        return DateTime(now.year, now.month, now.day);
+
+      case TimeSpan.week:
+        return now.subtract(const Duration(days: 6));
+
+      case TimeSpan.month:
+        return DateTime(now.year, now.month - 1, now.day);
+
+      case TimeSpan.year:
+        return DateTime(now.year - 1, now.month, now.day);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(
           height: 250,
-          child: PageView(
-            physics: const BouncingScrollPhysics(),
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-            },
-            controller: _pageController,
-            children: _pages,
+          child: Column(
+            children: [
+              TimeSpanSelector(
+                selected: _selectedTimeSpan,
+                onChanged: (span) {
+                  setState(() {
+                    _selectedTimeSpan = span;
+                    startDate = calculateRange(_selectedTimeSpan);
+                  });
+                }
+              ),
+              //_buildLineChartWidget(startDate, endDate),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const BouncingScrollPhysics(),
+                  onPageChanged: (index) {
+                    setState(() => _currentPage = index);
+                  },
+                  children: [
+                    _buildBarChartWidget(
+                      startDate,
+                      endDate,
+                    ),
+                    _buildHeatmapWidget(startDate, endDate),
+                  ],
+                ),
+              )
+            ],
           ),
         ),
-        _buildPageIndicator(_pages.length),
+        _buildPageIndicator(2),
       ],
     );
   }
