@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:stress_sense/app/stress_tracker/services/stress_api_service.dart';
 
@@ -11,11 +12,13 @@ class BluetoothService {
   BluetoothDevice? device;
   BluetoothCharacteristic? characteristic;
   final List<ScanResult> scanResults = [];
+  final StringBuffer _bleBuffer = StringBuffer();
+
 
   /// Change this to your ESP32 BLE service UUID
-  final Guid serviceUUID = Guid("12345678-1234-1234-1234-123456789abc");
-  final Guid characteristicUUID =
-  Guid("abcd1234-5678-1234-5678-abcdef123456");
+  /// // File 1: BluetoothService
+  final Guid serviceUUID = Guid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+  final Guid characteristicUUID = Guid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E"); // TX Characteristic
 
   final StressApiService stressService = StressApiService();
   // ===== Sliding windows =====
@@ -137,50 +140,69 @@ class BluetoothService {
 
   void _onDataReceived(List<int> data) async {
     try {
-      final jsonString = utf8.decode(data);
-      final Map<String, dynamic> sample = jsonDecode(jsonString);
+      final chunk = utf8.decode(data, allowMalformed: true);
+      _bleBuffer.write(chunk);
+      // debugPrint('before buffer: "$chunk"');
 
-      // ===== Add sample to buffers =====
-      accX.add((sample['acc_x'] as num).toDouble());
-      accY.add((sample['acc_y'] as num).toDouble());
-      accZ.add((sample['acc_z'] as num).toDouble());
-      bvp.add((sample['bvp'] as num).toDouble());
-      eda.add((sample['eda'] as num).toDouble());
-      temp.add((sample['temp'] as num).toDouble());
+      // Assume each JSON ends with '\n'
+      while (_bleBuffer.toString().contains('\n')) {
+        final fullData = _bleBuffer.toString();
+        final index = fullData.indexOf('\n');
 
-      // ===== Keep window size =====
-      if (accX.length > ACC_WINDOW) accX.removeAt(0);
-      if (accY.length > ACC_WINDOW) accY.removeAt(0);
-      if (accZ.length > ACC_WINDOW) accZ.removeAt(0);
-      if (bvp.length  > BVP_WINDOW) bvp.removeAt(0);
-      if (eda.length  > EDA_WINDOW) eda.removeAt(0);
-      if (temp.length > TEMP_WINDOW) temp.removeAt(0);
+        final jsonLine = fullData.substring(0, index).trim();
+        _bleBuffer.clear();
+        _bleBuffer.write(fullData.substring(index + 1));
 
-      // ===== Trigger prediction when window is ready =====
-      if (!AppData.isPredictingStress.value &&
-          accX.length == ACC_WINDOW &&
-          bvp.length == BVP_WINDOW &&
-          eda.length == EDA_WINDOW &&
-          temp.length == TEMP_WINDOW) {
+        if (jsonLine.isEmpty) continue;
 
-        AppData.isPredictingStress.value = true;
+        final Map<String, dynamic> sample = jsonDecode(jsonLine);
+        debugPrint('after buffer: "$sample"');
 
-        await stressService.stressPredictionPipeline(
-          accX: List.from(accX),
-          accY: List.from(accY),
-          accZ: List.from(accZ),
-          bvp: List.from(bvp),
-          eda: List.from(eda),
-          temp: List.from(temp),
-        );
-
-        AppData.isPredictingStress.value = false;
+        await _processSample(sample);
       }
-    } catch (e) {
-      throw BluetoothException(
-          "BLE parsing / pipeline error: ${e.toString()}");
+    } catch (e, s) {
+      debugPrint('BLE parse error: $e');
+      debugPrintStack(stackTrace: s);
     }
   }
+
+
+  Future<void> _processSample(Map<String, dynamic> sample) async {
+    accX.add((sample['acc_x'] as num).toDouble());
+    accY.add((sample['acc_y'] as num).toDouble());
+    accZ.add((sample['acc_z'] as num).toDouble());
+    bvp.add((sample['bvp'] as num).toDouble());
+    eda.add((sample['eda'] as num).toDouble());
+    temp.add((sample['temp'] as num).toDouble());
+
+    if (accX.length > ACC_WINDOW) accX.removeAt(0);
+    if (accY.length > ACC_WINDOW) accY.removeAt(0);
+    if (accZ.length > ACC_WINDOW) accZ.removeAt(0);
+    if (bvp.length  > BVP_WINDOW) bvp.removeAt(0);
+    if (eda.length  > EDA_WINDOW) eda.removeAt(0);
+    if (temp.length > TEMP_WINDOW) temp.removeAt(0);
+
+    if (accX.length == ACC_WINDOW &&
+        bvp.length == BVP_WINDOW &&
+        eda.length == EDA_WINDOW &&
+        temp.length == TEMP_WINDOW) {
+
+      // AppData.isPredictingStress.value = true;
+
+      await stressService.stressPredictionPipeline(
+        accX: List.from(accX),
+        accY: List.from(accY),
+        accZ: List.from(accZ),
+        bvp: List.from(bvp),
+        eda: List.from(eda),
+        temp: List.from(temp),
+      );
+
+      // AppData.isPredictingStress.value = false;
+    }
+  }
+
+
 
   Future<void> disconnect() async {
     try {

@@ -23,6 +23,16 @@ class _HeartRateCardState extends State<HeartRateCard>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
+
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.12,
+    ).animate(
+      CurvedAnimation(
+        parent: _beatController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
@@ -82,11 +92,15 @@ class _HeartRateCardState extends State<HeartRateCard>
         ? (baseDuration * 0.75).round()
         : baseDuration;
 
-    final targetScale = isStressed ? 1.28 : 1.12;
-
     if (_beatController.duration?.inMilliseconds != durationMs) {
       _beatController.duration = Duration(milliseconds: durationMs);
     }
+
+    if (!_beatController.isAnimating) {
+      _beatController.repeat(reverse: true);
+    }
+
+    final targetScale = isStressed ? 1.28 : 1.12;
 
     _scaleAnimation = Tween<double>(
       begin: 1.0,
@@ -98,9 +112,6 @@ class _HeartRateCardState extends State<HeartRateCard>
       ),
     );
 
-    if (!_beatController.isAnimating) {
-      _beatController.repeat(reverse: true);
-    }
   }
 
   Widget _buildCard({

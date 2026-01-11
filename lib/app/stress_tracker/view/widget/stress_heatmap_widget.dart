@@ -263,8 +263,6 @@ class _StressHeatmapState extends State<StressHeatmap> {
     );
   }
 
-
-
   DateTime calculateRange(TimeSpan span) {
     final now = DateTime.now();
 

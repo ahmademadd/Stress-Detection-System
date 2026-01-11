@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:stress_sense/app/stress_tracker/repo/firestore_stress_event_repository.dart';
 
@@ -30,29 +33,52 @@ class StressApiService {
       "eda":   {"valuelist": eda},
       "temp":  {"valuelist": temp},
     };
-    final response = await http.post(
-      Uri.parse("http://127.0.0.1:8004/preprocess/"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(preprocessBody),
-    );
+    try {
+      debugPrint("➡️ Sending request to server PREPROCESS");
 
-    if (response.statusCode != 200) {
-      throw Exception("Preprocessing failed");
+      final response = await http
+          .post(
+        Uri.parse("https://unwadded-pseudocultural-alva.ngrok-free.dev/preprocess/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(preprocessBody),
+      )
+          .timeout(const Duration(seconds: 5));
+      final fixedBody = response.body.replaceAll('nan', '0');
+
+      debugPrint("✅ Response received PREPROCESS");
+      debugPrint("Status PREPROCESS: ${response.statusCode}");
+      debugPrint("Body PREPROCESS: $fixedBody");
+
+      if (response.statusCode != 200) {
+        throw Exception("Server error: ${response.statusCode}");
+      }
+
+      final List<dynamic> raw = jsonDecode(fixedBody);
+      return raw.map((e) => (e as num).toDouble()).toList();
+
+    } on TimeoutException {
+      throw Exception("Connection timeout — server unreachable");
+    } on SocketException {
+      throw Exception("Network error — no route to host");
+    } catch (e) {
+      rethrow;
     }
 
-    final List<dynamic> raw = jsonDecode(response.body);
-    final List<double> features = raw.map((e) => (e as num).toDouble()).toList();
-    return features;
   }
 
   Future<int> predictStress(List<double> features) async {
+    debugPrint("➡️ Sending request to server PREDICT");
+
     final response = await http.post(
-      Uri.parse("http://127.0.0.1:8002/predict/"),
+      Uri.parse("https://unstringent-prognostically-regena.ngrok-free.dev/predict/"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "valuelist": features,
       }),
     );
+    debugPrint("✅ Response received PREDICT");
+    debugPrint("Status PREDICT: ${response.statusCode}");
+    debugPrint("Body PREDICT: ${response.body}");
 
     if (response.statusCode != 200) {
       throw Exception("Prediction failed");
