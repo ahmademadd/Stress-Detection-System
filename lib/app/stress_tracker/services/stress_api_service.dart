@@ -38,7 +38,7 @@ class StressApiService {
 
       final response = await http
           .post(
-        Uri.parse("https://unwadded-pseudocultural-alva.ngrok-free.dev/preprocess/"),
+        Uri.parse("http://192.168.8.5:8004/preprocess/"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(preprocessBody),
       )
@@ -50,6 +50,7 @@ class StressApiService {
       debugPrint("Body PREPROCESS: $fixedBody");
 
       if (response.statusCode != 200) {
+        AppData.isPredictingStress.value = false;
         throw Exception("Server error: ${response.statusCode}");
       }
 
@@ -57,10 +58,13 @@ class StressApiService {
       return raw.map((e) => (e as num).toDouble()).toList();
 
     } on TimeoutException {
+      AppData.isPredictingStress.value = false;
       throw Exception("Connection timeout — server unreachable");
     } on SocketException {
+      AppData.isPredictingStress.value = false;
       throw Exception("Network error — no route to host");
     } catch (e) {
+      AppData.isPredictingStress.value = false;
       rethrow;
     }
 
@@ -70,7 +74,7 @@ class StressApiService {
     debugPrint("➡️ Sending request to server PREDICT");
 
     final response = await http.post(
-      Uri.parse("https://unstringent-prognostically-regena.ngrok-free.dev/predict/"),
+      Uri.parse("http://192.168.8.5:8002/predict/"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "valuelist": features,
@@ -81,6 +85,7 @@ class StressApiService {
     debugPrint("Body PREDICT: ${response.body}");
 
     if (response.statusCode != 200) {
+      AppData.isPredictingStress.value = false;
       throw Exception("Prediction failed");
     }
 

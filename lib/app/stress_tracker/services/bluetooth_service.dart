@@ -30,10 +30,10 @@ class BluetoothService {
   final List<double> temp = [];
 
 // Window sizes (match backend frequencies)
-  static const int ACC_WINDOW  = 64;
-  static const int BVP_WINDOW  = 128;
-  static const int EDA_WINDOW  = 32;
-  static const int TEMP_WINDOW = 32;
+  static const int ACC_WINDOW  = 960;
+  static const int BVP_WINDOW  = 1920;
+  static const int EDA_WINDOW  = 120;
+  static const int TEMP_WINDOW = 120;
 
   Future<List<ScanResult>> scanDevices() async {
     try {
@@ -168,6 +168,13 @@ class BluetoothService {
 
 
   Future<void> _processSample(Map<String, dynamic> sample) async {
+    if (sample.containsKey('bpm')) {
+      // Extract the integer value sent from ESP32
+      int newBpm = (sample['bpm'] as num).toInt();
+
+      // Update the global notifier that HeartRateCard is listening to
+      AppData.bpm.value = newBpm;
+    }
     accX.add((sample['acc_x'] as num).toDouble());
     accY.add((sample['acc_y'] as num).toDouble());
     accZ.add((sample['acc_z'] as num).toDouble());
@@ -182,12 +189,13 @@ class BluetoothService {
     if (eda.length  > EDA_WINDOW) eda.removeAt(0);
     if (temp.length > TEMP_WINDOW) temp.removeAt(0);
 
-    if (accX.length == ACC_WINDOW &&
+    if (!AppData.isPredictingStress.value &&
+        accX.length == ACC_WINDOW &&
         bvp.length == BVP_WINDOW &&
         eda.length == EDA_WINDOW &&
         temp.length == TEMP_WINDOW) {
 
-      // AppData.isPredictingStress.value = true;
+      AppData.isPredictingStress.value = true;
 
       await stressService.stressPredictionPipeline(
         accX: List.from(accX),
@@ -198,7 +206,7 @@ class BluetoothService {
         temp: List.from(temp),
       );
 
-      // AppData.isPredictingStress.value = false;
+      AppData.isPredictingStress.value = false;
     }
   }
 

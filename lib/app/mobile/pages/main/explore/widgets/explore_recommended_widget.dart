@@ -6,7 +6,6 @@ import 'package:stress_sense/core/theme/app_text_styles.dart';
 
 import '../../../../../../core/bluetooth/device_connection_state.dart';
 import '../../../../../../core/constants/words.dart';
-import '../../../../../habit_tracker/view/widgets/habit_tracker_widget.dart';
 import '../../../../../stress_tracker/view/widget/stress_status_banner_widget.dart';
 import '../../../../scaffolds/app_padding_scaffold.dart';
 import '../../../../widgets/list_tile_widget.dart';
