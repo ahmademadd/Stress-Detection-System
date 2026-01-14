@@ -125,7 +125,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
             curve: Curves.easeOut,
             LineChartData(
               minY: 0,
-              maxY: 30,
+              maxY: 100,
               gridData: FlGridData(show: true),
               borderData: FlBorderData(show: true),
 
@@ -307,6 +307,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
                     setState(() => _currentPage = index);
                   },
                   children: [
+                    _buildLineChartWidget(startDate, endDate),
                     _buildBarChartWidget(
                       startDate,
                       endDate,
@@ -318,7 +319,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
             ],
           ),
         ),
-        _buildPageIndicator(2),
+        _buildPageIndicator(3),
       ],
     );
   }

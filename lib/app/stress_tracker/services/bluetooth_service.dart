@@ -175,6 +175,8 @@ class BluetoothService {
       // Update the global notifier that HeartRateCard is listening to
       AppData.bpm.value = newBpm;
     }
+    AppData.isPredictingStress.value = false;
+
     accX.add((sample['acc_x'] as num).toDouble());
     accY.add((sample['acc_y'] as num).toDouble());
     accZ.add((sample['acc_z'] as num).toDouble());
