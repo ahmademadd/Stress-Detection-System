@@ -10,13 +10,14 @@ import '../model/stress_event.dart';
 import '../repo/daily_stress_summary_repository.dart';
 import '../repo/firestore_stress_summary_repository.dart';
 import '../repo/stress_event_repository.dart';
+import 'notification_service.dart';
 
 class StressApiService {
   // CONFIGURATION
   // ---------------------------------------------------------------------------
   // TODO: Update this IP to match your current computer's IP (check via ipconfig/ifconfig)
-  static const String _baseUrl = "http://192.168.8.7";
-  static const Duration _timeout = Duration(seconds: 20); // Increased time for safety
+  static const String _baseUrl = "http://192.168.8.5";
+  static const Duration _timeout = Duration(seconds: 5); // Increased time for safety
 
   final StressEventRepository stressEventRepository = FirestoreStressEventRepository();
   final StressSummaryRepository stressSummaryRepository = FirestoreStressSummaryRepository();
@@ -39,7 +40,7 @@ class StressApiService {
       )
           .timeout(_timeout);
 
-      debugPrint("✅ Response $endpoint: ${response.statusCode}");
+      debugPrint("✅ Response $endpoint: ${response.statusCode}\n${response.body}");
 
       if (response.statusCode != 200) {
         throw HttpException("Server returned ${response.statusCode}: ${response.body}");
@@ -140,6 +141,10 @@ class StressApiService {
 
       if (prediction == 1) {
         AppData.isStressed.value = true;
+        await NotificationService().showNotification(
+          title: "Stress Detected!",
+          body: "A stress episode has been detected for the child.",
+        );
 
         // Save event
         final event = StressEvent(

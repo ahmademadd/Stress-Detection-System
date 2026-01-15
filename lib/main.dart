@@ -4,6 +4,7 @@ import 'package:stress_sense/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 
 import 'app/mobile/layout/init_app_layout.dart';
+import 'app/stress_tracker/services/notification_service.dart';
 import 'core/constants/words.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -16,6 +17,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService().init();
   runApp(const MyApp());
 }
 

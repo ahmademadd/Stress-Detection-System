@@ -35,6 +35,8 @@ class BluetoothService {
   static const int EDA_WINDOW  = 120;
   static const int TEMP_WINDOW = 120;
 
+  int _packetCounter = 0;
+
   Future<List<ScanResult>> scanDevices() async {
     try {
       scanResults.clear();
@@ -168,47 +170,84 @@ class BluetoothService {
 
 
   Future<void> _processSample(Map<String, dynamic> sample) async {
+    // 1. Update Heart Rate UI immediately
     if (sample.containsKey('bpm')) {
-      // Extract the integer value sent from ESP32
       int newBpm = (sample['bpm'] as num).toInt();
-
-      // Update the global notifier that HeartRateCard is listening to
       AppData.bpm.value = newBpm;
     }
-    AppData.isPredictingStress.value = false;
 
-    accX.add((sample['acc_x'] as num).toDouble());
-    accY.add((sample['acc_y'] as num).toDouble());
-    accZ.add((sample['acc_z'] as num).toDouble());
-    bvp.add((sample['bvp'] as num).toDouble());
-    eda.add((sample['eda'] as num).toDouble());
-    temp.add((sample['temp'] as num).toDouble());
+    // REMOVED: AppData.isPredictingStress.value = false;
+    // Don't reset this here! It stops the UI loading spinner while prediction is running.
 
-    if (accX.length > ACC_WINDOW) accX.removeAt(0);
-    if (accY.length > ACC_WINDOW) accY.removeAt(0);
-    if (accZ.length > ACC_WINDOW) accZ.removeAt(0);
-    if (bvp.length  > BVP_WINDOW) bvp.removeAt(0);
-    if (eda.length  > EDA_WINDOW) eda.removeAt(0);
-    if (temp.length > TEMP_WINDOW) temp.removeAt(0);
+    // 2. Extract Raw Values
+    double rawAccX = (sample['acc_x'] as num).toDouble();
+    double rawAccY = (sample['acc_y'] as num).toDouble();
+    double rawAccZ = (sample['acc_z'] as num).toDouble();
+    double rawBvp  = (sample['bvp'] as num).toDouble();
+    double rawEda  = (sample['eda'] as num).toDouble();
+    double rawTemp = (sample['temp'] as num).toDouble();
 
+    // 3. THE FIX: Intelligent Filling (Upsampling/Downsampling)
+
+    // A. ACCELEROMETER (Target ~32Hz. We have 20Hz. Add 2x = 40Hz)
+    // We add the same value twice to fill the buffer faster
+    for(int i=0; i<2; i++) {
+      accX.add(rawAccX);
+      accY.add(rawAccY);
+      accZ.add(rawAccZ);
+    }
+
+    // B. BVP (Target ~64Hz. We have 20Hz. Add 3x = 60Hz)
+    // We add the same value 3 times.
+    for(int i=0; i<3; i++) {
+      bvp.add(rawBvp);
+    }
+
+    // C. EDA & TEMP (Target ~4Hz. We have 20Hz. Take 1 every 5)
+    _packetCounter++;
+    if (_packetCounter % 5 == 0) {
+      eda.add(rawEda);
+      temp.add(rawTemp);
+    }
+
+    // 4. Sliding Window Logic (Keep buffer size fixed)
+    while (accX.length > ACC_WINDOW) accX.removeAt(0);
+    while (accY.length > ACC_WINDOW) accY.removeAt(0);
+    while (accZ.length > ACC_WINDOW) accZ.removeAt(0);
+    while (bvp.length  > BVP_WINDOW) bvp.removeAt(0);
+    while (eda.length  > EDA_WINDOW) eda.removeAt(0);
+    while (temp.length > TEMP_WINDOW) temp.removeAt(0);
+
+    // 5. Trigger Prediction
+    // Now that we fill 3x faster, this will trigger in ~32 seconds.
     if (!AppData.isPredictingStress.value &&
         accX.length == ACC_WINDOW &&
         bvp.length == BVP_WINDOW &&
         eda.length == EDA_WINDOW &&
         temp.length == TEMP_WINDOW) {
 
+      debugPrint("🚀 Window Full! Triggering Prediction...");
       AppData.isPredictingStress.value = true;
 
-      await stressService.stressPredictionPipeline(
-        accX: List.from(accX),
-        accY: List.from(accY),
-        accZ: List.from(accZ),
-        bvp: List.from(bvp),
-        eda: List.from(eda),
-        temp: List.from(temp),
-      );
+      try {
+        await stressService.stressPredictionPipeline(
+          accX: List.from(accX),
+          accY: List.from(accY),
+          accZ: List.from(accZ),
+          bvp: List.from(bvp),
+          eda: List.from(eda),
+          temp: List.from(temp),
+        );
+      } catch (e) {
+        debugPrint("Error in pipeline: $e");
+      } finally {
+        // Only turn off the flag when the network call is totally done
+        AppData.isPredictingStress.value = false;
 
-      AppData.isPredictingStress.value = false;
+        // OPTIONAL: Clear buffers to force a wait for fresh data?
+        // Or keep sliding (overlapping windows).
+        // Typically overlapping is better, so we leave them full.
+      }
     }
   }
 

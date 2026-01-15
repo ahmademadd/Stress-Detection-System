@@ -40,11 +40,6 @@ class _StressOverviewHeaderState extends State<StressOverviewHeader> {
     final now = DateTime.now();
 
     switch (span) {
-      case TimeSpan.day:
-        return DateTimeRange(
-          start: DateTime(now.year, now.month, now.day),
-          end: now,
-        );
 
       case TimeSpan.week:
         return DateTimeRange(

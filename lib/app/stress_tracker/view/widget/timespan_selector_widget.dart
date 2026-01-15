@@ -52,8 +52,6 @@ class TimeSpanSelector extends StatelessWidget {
 
   String _label(TimeSpan span) {
     switch (span) {
-      case TimeSpan.day:
-        return '1d';
       case TimeSpan.week:
         return '7d';
       case TimeSpan.month:

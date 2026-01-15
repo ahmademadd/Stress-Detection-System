@@ -49,7 +49,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
         final barChartData = snapshot.data!.entries.map((entry) {
           final date = DateTime.parse(entry.key);
           return {
-            'day': weekdayLabel(date),
+            'day': '${date.month}/${date.day}',
             'count': entry.value,
           };
         }).toList();
@@ -78,24 +78,26 @@ class _StressHeatmapState extends State<StressHeatmap> {
   List<Map<String, dynamic>> buildHeatmapData(Map<String, int> stressCounts) {
     if (stressCounts.isEmpty) return [];
 
-    final dates = stressCounts.keys.map((d) => DateTime.parse(d)).toList()
+    // 1️⃣ Parse & sort dates FIRST
+    final dates = stressCounts.keys
+        .map((d) => DateTime.parse(d))
+        .toList()
       ..sort();
 
     final startDate = dates.first;
-    final List<Map<String, dynamic>> result = [];
 
-    stressCounts.forEach((dayKey, count) {
-      final date = DateTime.parse(dayKey);
+    // 2️⃣ Build heatmap rows in sorted order
+    return dates.map((date) {
+      final key = date.toIso8601String().split('T').first;
 
-      result.add({
-        'day': weekdayLabel(date),
+      return {
+        'day': weekdayLabel(date),              // Mon–Sun (unchanged ✅)
         'week': 'W${weekIndex(date, startDate)}',
-        'count': count,
-      });
-    });
-
-    return result;
+        'count': stressCounts[key] ?? 0,
+      };
+    }).toList();
   }
+
 
   String weekdayLabel(DateTime date) {
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -195,44 +197,83 @@ class _StressHeatmapState extends State<StressHeatmap> {
 
 
   Widget _buildHeatmapWidget(DateTime startDate, DateTime endDate) {
-    return StreamBuilder<Map<String, int>>(
-      stream: stressSummaryRepository.watchDailyStressCounts(
-        startDate: startDate,
-        endDate: endDate,
+    final legendItems = [
+      {'label': '(Low)', 'color': Color(0xFFE8F5E9)},
+      {'label': '(Medium)', 'color': Color(0xFF81C784)},
+      {'label': '(High)', 'color': Color(0xFF1B5E20)},
+    ];
+    return Column(
+      children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: legendItems.map((item) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: item['color'] as Color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    item['label'] as String,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
       ),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    Expanded(
+      child: StreamBuilder<Map<String, int>>(
+            stream: stressSummaryRepository.watchDailyStressCounts(
+              startDate: startDate,
+              endDate: endDate,
+            ),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-        final heatmapData = buildHeatmapData(snapshot.data!);
+              final heatmapData = buildHeatmapData(snapshot.data!);
 
-        if (heatmapData.isEmpty) {
-          return const Center(child: Text('No stress data yet'));
-        }
+              if (heatmapData.isEmpty) {
+                return const Center(child: Text('No stress data yet'));
+              }
 
-        return CristalyseChart()
-          .data(heatmapData)
-          .mappingHeatMap(
-            x: 'week',
-            y: 'day',
-            value: 'count',
-          )
-          .geomHeatMap(
-            cellSpacing: 2,
-            cellBorderRadius: BorderRadius.circular(4),
-            colorGradient: const [
-              Color(0xFFE8F5E9),
-              Color(0xFF81C784),
-              Color(0xFF1B5E20),
-            ],
-            interpolateColors: true,
-            showValues: false,
-          )
-          .animate(duration: Duration(milliseconds: 500))
-          .theme(ChartTheme.darkTheme())
-          .build();
-      },
+              return CristalyseChart()
+                .data(heatmapData)
+                .mappingHeatMap(
+                  x: 'week',
+                  y: 'day',
+                  value: 'count',
+                )
+                .geomHeatMap(
+                  cellSpacing: 2,
+                  cellBorderRadius: BorderRadius.circular(4),
+                  colorGradient: const [
+                    Color(0xFFE8F5E9),
+                    Color(0xFF81C784),
+                    Color(0xFF1B5E20),
+                  ],
+                  interpolateColors: true,
+                  showValues: false,
+                )
+                .animate(duration: Duration(milliseconds: 500))
+                .theme(ChartTheme.darkTheme())
+                .build();
+            },
+          ),
+    ),
+      ],
     );
   }
 
@@ -267,9 +308,6 @@ class _StressHeatmapState extends State<StressHeatmap> {
     final now = DateTime.now();
 
     switch (span) {
-      case TimeSpan.day:
-        return DateTime(now.year, now.month, now.day);
-
       case TimeSpan.week:
         return now.subtract(const Duration(days: 6));
 
@@ -277,7 +315,7 @@ class _StressHeatmapState extends State<StressHeatmap> {
         return DateTime(now.year, now.month - 1, now.day);
 
       case TimeSpan.year:
-        return DateTime(now.year - 1, now.month, now.day);
+        return now.subtract(const Duration(days: 364)); // exactly 52 weeks
     }
   }
 
@@ -298,7 +336,6 @@ class _StressHeatmapState extends State<StressHeatmap> {
                   });
                 }
               ),
-              //_buildLineChartWidget(startDate, endDate),
               Expanded(
                 child: PageView(
                   controller: _pageController,
