@@ -1,46 +1,63 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-lib/firebase_options.dart
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# === Flutter / Dart ===
 .dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
 .flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
+.metadata
 
-# Symbolication related
-app.*.symbols
+# === IDEs ===
+.idea/
+.vscode/
+*.iml
 
-# Obfuscation related
-app.*.map.json
+# === Android ===
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.jks
+*.keystore
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# === iOS / macOS ===
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+*.xcuserstate
+*.xcworkspace
+
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# === Web ===
+web/.dart_tool/
+web/build/
+
+# === Firebase ===
+firebase-debug.log
+.firestore/
+.firebaserc
+firebase.json
+
+# ⚠️ Only ignore these if you generate them locally
+# and store them securely elsewhere
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+*.log
